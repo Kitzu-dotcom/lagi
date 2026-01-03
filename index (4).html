@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kitzu Store</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h1>Kitzu Store</h1>
+    <nav>
+        <a href="#" onclick="showLogin()">Login</a>
+        <a href="#" onclick="showRegister()">Register</a>
+        <a href="#" onclick="showHomeModal()">Home</a>
+        <a href="#" onclick="openTransactionModal()">Riwayat Transaksi</a>
+        <a href="#" onclick="addPromoCode()">Tambah Promo (Admin)</a>
+    </nav>
+</header>
+
+<div class="banner">
+    <p>24 jam, aman, terpercaya, dan murah</p>
+</div>
+
+<main class="games"></main>
+
+<!-- Modals -->
+<div id="home-modal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('home-modal')">&times;</span>
+        <h2>Selamat datang di Kitzu Store!</h2>
+        <p>Pilih game dan paket yang ingin dibeli. Gunakan promo kode <b>KitzuneRay</b> atau <b>Inamul</b> untuk diskon 20%!</p>
+    </div>
+</div>
+
+<div id="login-modal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('login-modal')">&times;</span>
+        <h2>Login</h2>
+        <input type="text" id="login-email" placeholder="Email / Username"><br>
+        <input type="password" id="login-password" placeholder="Password"><br>
+        <button onclick="loginUser()">Login</button>
+    </div>
+</div>
+
+<div id="register-modal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('register-modal')">&times;</span>
+        <h2>Register</h2>
+        <input type="text" id="reg-email" placeholder="Email"><br>
+        <input type="password" id="reg-password" placeholder="Password"><br>
+        <button onclick="registerUser()">Register</button>
+    </div>
+</div>
+
+<div id="transaction-modal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('transaction-modal')">&times;</span>
+        <h2>Riwayat Transaksi</h2>
+        <div id="transaction-box" style="max-height:400px;overflow-y:auto;"></div>
+    </div>
+</div>
+
+<!-- Customer Service -->
+<button id="cs-btn" onclick="toggleChat()">CS</button>
+<div id="chat-box" class="modal-chat">
+    <div class="chat-header">
+        Customer Service
+        <span onclick="toggleChat()">&#10006;</span>
+    </div>
+    <div id="chat-messages"></div>
+    <div class="chat-input">
+        <input type="text" id="chat-input" placeholder="Tulis pesan">
+        <button onclick="sendChat()">Kirim</button>
+    </div>
+</div>
+
+<footer>&copy; 2026 Kitzu Store - All Service</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

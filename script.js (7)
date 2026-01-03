@@ -1,0 +1,253 @@
+// ===========================
+// Data & Config
+// ===========================
+let currentUser = null;
+
+// Semua game & paket lengkap
+const gamePackages = {
+  MLBB: [
+    {name:"Diamond 12",price:12000},{name:"Diamond 36",price:36000},{name:"Diamond 50",price:50000},
+    {name:"Diamond 70",price:70000},{name:"Diamond 100",price:100000},{name:"Diamond 200",price:200000},
+    {name:"Diamond 300",price:300000},{name:"Diamond 400",price:400000},{name:"Diamond 500",price:500000},
+    {name:"Diamond 1000",price:1000000}
+  ],
+  FF: [
+    {name:"Diamond 12",price:12000},{name:"Diamond 50",price:50000},{name:"Diamond 100",price:100000},
+    {name:"Diamond 300",price:300000},{name:"Diamond 500",price:500000},
+    {name:"Weekly Diamond 12",price:12000},{name:"Weekly Diamond 50",price:50000},
+    {name:"Weekly Diamond 100",price:100000},{name:"Weekly Diamond 300",price:300000},{name:"Weekly Diamond 500",price:500000}
+  ],
+  Roblox: [
+    {name:"Robux 80",price:12000},{name:"Robux 400",price:60000},{name:"Robux 800",price:120000},
+    {name:"Robux 1700",price:250000},{name:"Robux 4500",price:600000},{name:"Premium 1 bulan",price:100000},
+    {name:"Premium 3 bulan",price:280000},{name:"Premium 6 bulan",price:550000},{name:"Premium 12 bulan",price:1000000},
+    {name:"Robux 10000",price:1200000}
+  ],
+  Genshin: [
+    {name:"Primogem 60",price:12000},{name:"Primogem 300",price:60000},{name:"Primogem 680",price:120000},
+    {name:"Primogem 1200",price:200000},{name:"Primogem 2500",price:400000},{name:"Primogem 4000",price:600000},
+    {name:"Primogem 5000",price:750000},{name:"Primogem 10000",price:1500000},{name:"Primogem 20000",price:3000000},
+    {name:"Primogem 50000",price:7000000}
+  ],
+  Stumble: [
+    {name:"Gems 50",price:12000},{name:"Gems 100",price:25000},{name:"Gems 250",price:60000},
+    {name:"Gems 500",price:120000},{name:"Gems 1000",price:200000},{name:"Gems 1500",price:300000},
+    {name:"Token 100",price:12000},{name:"Token 500",price:60000},{name:"Token 1000",price:120000},
+    {name:"Token 2000",price:200000}
+  ],
+  CODM: [
+    {name:"CP 60",price:12000},{name:"CP 300",price:60000},{name:"CP 680",price:120000},
+    {name:"CP 1200",price:200000},{name:"CP 2500",price:400000},{name:"CP 4000",price:600000},
+    {name:"CP 5000",price:750000},{name:"CP 10000",price:1500000},{name:"CP 20000",price:3000000},
+    {name:"CP 50000",price:7000000}
+  ],
+  PUBG: [
+    {name:"UC 60",price:12000},{name:"UC 300",price:60000},{name:"UC 680",price:120000},
+    {name:"UC 1200",price:200000},{name:"UC 2500",price:400000},{name:"UC 4000",price:600000},
+    {name:"UC 5000",price:750000},{name:"UC 10000",price:1500000},{name:"UC 20000",price:3000000},
+    {name:"UC 50000",price:7000000}
+  ],
+  EASports: [
+    {name:"Points 500",price:12000},{name:"Points 1000",price:25000},{name:"Points 2000",price:50000}
+  ]
+};
+
+// Metode pembayaran
+const paymentMethods = ["Dana","GoPay","OVO","ShopeePay","QRIS","Indomaret","Alfamart","Lawson","BNI","BRI","BCA","CIMB","Mandiri","BTN","Bank Syariah"];
+
+// Promo kode default
+let promoCodes = {"KitzuneRay":0.2,"Inamul":0.2};
+
+// Admin resmi
+const adminAccount = {username:"Kitzu Admin",password:"Bocilemix"};
+
+// ===========================
+// Inisialisasi game cards
+// ===========================
+function init(){
+  const mainDiv = document.querySelector(".games");
+  mainDiv.innerHTML = "";
+  for(let game in gamePackages){
+    let card = document.createElement("div");
+    card.className = "game-card";
+    card.innerHTML = `
+      <h2>${game}</h2>
+      <select id="${game}-package">
+        ${gamePackages[game].map((p,i)=>`<option value="${i}">${p.name} - Rp${p.price}</option>`).join('')}
+      </select><br>
+      <input type="text" placeholder="Kode Promo" id="${game}-promo">
+      <button onclick="redeemCode('${game}')">Redeem</button>
+      <span id="${game}-promo-status" class="promo-status"></span><br>
+      <select id="${game}-payment">
+        ${paymentMethods.map(m=>`<option value="${m}">${m}</option>`).join('')}
+      </select><br>
+      <button onclick="buy('${game}')">Beli</button>
+    `;
+    mainDiv.appendChild(card);
+  }
+}
+init();
+
+// ===========================
+// Modal
+// ===========================
+function showLogin(){document.getElementById("login-modal").style.display="block";}
+function showRegister(){document.getElementById("register-modal").style.display="block";}
+function showHomeModal(){document.getElementById("home-modal").style.display="block";}
+function closeModal(id){document.getElementById(id).style.display="none";}
+
+// ===========================
+// Register & Login
+// ===========================
+function registerUser(){
+  const email=document.getElementById("reg-email").value;
+  const pw=document.getElementById("reg-password").value;
+  if(!email || !pw){alert("Email & password wajib!"); return;}
+  let users=JSON.parse(localStorage.getItem("users"))||[];
+  if(users.find(u=>u.email===email)){alert("Email sudah terdaftar"); return;}
+  users.push({email,password:pw,role:"user"});
+  localStorage.setItem("users",JSON.stringify(users));
+  alert("Registrasi berhasil! Silakan login.");
+  closeModal("register-modal");
+}
+
+function loginUser(){
+  const email=document.getElementById("login-email").value;
+  const pw=document.getElementById("login-password").value;
+  if(email===adminAccount.username && pw===adminAccount.password){
+    currentUser={email,role:"admin"};
+    alert("Login admin berhasil!");
+    closeModal("login-modal");
+    return;
+  }
+  let users=JSON.parse(localStorage.getItem("users"))||[];
+  let user=users.find(u=>u.email===email && u.password===pw);
+  if(user){currentUser=user; alert("Login berhasil!"); closeModal("login-modal");}
+  else{alert("Email/password salah");}
+}
+
+// ===========================
+// Redeem Promo
+// ===========================
+function redeemCode(game){
+  const code=document.getElementById(`${game}-promo`).value;
+  const status=document.getElementById(`${game}-promo-status`);
+  if(promoCodes[code]){
+    status.textContent=`Valid! Diskon ${promoCodes[code]*100}%`;
+    status.style.color="green";
+  }else{
+    status.textContent="Invalid!";
+    status.style.color="red";
+  }
+}
+
+// ===========================
+// Beli Paket
+// ===========================
+function buy(game){
+  if(!currentUser){alert("Silakan login terlebih dahulu!"); return;}
+  const pkgIndex = document.getElementById(`${game}-package`).value;
+  const pkg = gamePackages[game][pkgIndex];
+  const promo = document.getElementById(`${game}-promo`).value;
+  const payment = document.getElementById(`${game}-payment`).value;
+  let total = pkg.price;
+  if(promo && promoCodes[promo]){
+    total = total * (1 - promoCodes[promo]);
+    alert(`Kode promo berlaku! Diskon ${promoCodes[promo]*100}%`);
+  } else if(promo){
+    alert("Kode promo tidak berlaku!");
+  }
+  let transactions = JSON.parse(localStorage.getItem("transactions"))||[];
+  transactions.push({
+    user: currentUser.email,
+    game,
+    pkg: pkg.name,
+    promo,
+    total,
+    payment,
+    time: new Date().toLocaleString(),
+    status:"Menunggu"
+  });
+  localStorage.setItem("transactions",JSON.stringify(transactions));
+  alert(`Transaksi berhasil!\n${pkg.name}\nMetode: ${payment}\nTotal bayar: Rp${total}`);
+}
+
+// ===========================
+// Riwayat Transaksi
+// ===========================
+function openTransactionModal(){
+  if(!currentUser){alert("Login dulu!"); return;}
+  const transactions=JSON.parse(localStorage.getItem("transactions"))||[];
+  const box=document.getElementById("transaction-box");
+  box.innerHTML="";
+  const userTrans=currentUser.role==="admin"?transactions:transactions.filter(t=>t.user===currentUser.email);
+  if(userTrans.length===0){box.innerHTML="Belum ada transaksi.";}
+  else userTrans.forEach((t,i)=>{
+    let div=document.createElement("div");
+    div.style.borderBottom="1px solid #ccc"; div.style.padding="5px";
+    div.textContent=`${i+1}. ${t.game} - ${t.pkg} - Promo: ${t.promo||'Tidak ada'} - ${t.payment} - Rp${t.total} - Status: ${t.status} - ${t.time}`;
+    if(currentUser.role==="admin"){
+      let btn=document.createElement("button");
+      btn.textContent="Proses";
+      btn.style.marginLeft="10px";
+      btn.onclick=()=>{t.status="Selesai"; localStorage.setItem("transactions",JSON.stringify(transactions)); openTransactionModal();}
+      div.appendChild(btn);
+    }
+    box.appendChild(div);
+  });
+  document.getElementById("transaction-modal").style.display="block";
+}
+
+// ===========================
+// Customer Service
+// ===========================
+function toggleChat(){
+  const box=document.getElementById("chat-box");
+  box.style.display = box.style.display==="none"?"block":"none";
+}
+function sendChat(){
+  if(!currentUser){alert("Login dulu!"); return;}
+  const input=document.getElementById("chat-input");
+  if(input.value.trim()==="") return;
+  let chats=JSON.parse(localStorage.getItem("chats"))||[];
+  chats.push({user:currentUser.email,message:input.value,reply:""});
+  localStorage.setItem("chats",JSON.stringify(chats));
+  displayChat();
+  input.value="";
+}
+function displayChat(){
+  const messages=document.getElementById("chat-messages");
+  messages.innerHTML="";
+  let chats=JSON.parse(localStorage.getItem("chats"))||[];
+  chats.forEach(c=>{
+    let div=document.createElement("div");
+    div.textContent=`User(${c.user}): ${c.message}`;
+    messages.appendChild(div);
+    if(currentUser && currentUser.role==="admin" && c.reply===""){
+      let btn=document.createElement("button");
+      btn.textContent="Balas";
+      btn.onclick=()=>{
+        let r=prompt("Tulis balasan:");
+        if(r){c.reply=r; localStorage.setItem("chats",JSON.stringify(chats)); displayChat();}
+      };
+      div.appendChild(btn);
+    }
+    if(c.reply){
+      let rep=document.createElement("div");
+      rep.style.color="blue";
+      rep.textContent=`Admin: ${c.reply}`;
+      messages.appendChild(rep);
+    }
+  });
+}
+setInterval(()=>{if(document.getElementById("chat-box").style.display==="block") displayChat();},1000);
+
+// ===========================
+// Admin Tambah Promo
+// ===========================
+function addPromoCode(){
+  if(!currentUser || currentUser.role!=="admin"){alert("Hanya admin yang bisa membuat promo!"); return;}
+  let code=prompt("Masukkan kode promo baru:");
+  let disc=parseFloat(prompt("Masukkan diskon (misal 0.2 = 20%)"));
+  if(code && disc>0){promoCodes[code]=disc; alert("Promo kode berhasil ditambahkan!");}
+}
